@@ -1,0 +1,98 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <AronCLibNew.h>
+
+
+/*
+   PNG File Header Format:
+ 
+   First 16 bytes: signature
+   0x89 0x50 0x4E 0x47 0x0D 0x0A 0x1A 0x0A   0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+         ↑    ↑    ↑ 
+        'P'  'N'  'G'
+   Following 8 bytes = 4 bytes + 4 byets
+                         ↑         ↑  
+     image dimension = width   x  height  (in pixel)
+ 
+ 
+                00=[89] -> []
+                01=[50] -> [P]
+                02=[4E] -> [N]
+                03=[47] -> [G]
+                04=[0D] -> []
+                05=[0A] -> []
+                06=[1A] -> []
+                07=[0A] -> [ ]
+
+                08=[00] -> []
+                09=[00] -> []
+                10=[00] -> []   13
+                11=[0D] -> []
+
+                12=[49] -> [I]
+                13=[48] -> [H]
+                14=[44] -> [D]
+                15=[52] -> [R]
+
+                16=[00] -> []
+                17=[00] -> [] 
+                18=[08] -> []   width
+                19=[0C] -> []
+
+                20=[00] -> []
+                21=[00] -> []
+                22=[05] -> []   height
+                23=[B4] -> []
+
+                00 00 08 0C = 2060
+                00 00 05 B4 = 1460
+
+                2060 1460
+ 
+ 
+ */
+void readPNG(char* fpath, int* width, int* height){
+    const int BUFMAX = 16 + 8;
+    unsigned char buf[BUFMAX];
+    
+    FILE *fp = fopen(fpath, "rb");
+    if(fp){
+        int nByte = fread(buf, 1, BUFMAX, fp);
+
+        // for(int i = 0; i < nByte; i++){
+            // printf("%d=[%02X] -> [%c]\n", i, buf[i], buf[i]);
+         //}
+
+        // network order to host order 
+        // big endian to little endian
+        //       buf[16] x 2^24    buf[17] x 2^16    buf[18] x 2^8    buf[19] x 2^0
+        int w = (buf[16] << 24) + (buf[17] << 16) + (buf[18] << 8) + (buf[19] << 0);
+        int h = (buf[20] << 24) + (buf[21] << 16) + (buf[22] << 8) + (buf[23] << 0);
+        
+        *width = w;
+        *height = h;
+
+    }else{
+        printf("ERROR: open file %s\n", fpath);
+    }
+}
+
+// gcc myfile.c -o main
+int main (int argc, char* argv[]) {
+    if(argc == 1 || argc == 2 && strcmp(argv[1], "-h") == 0){
+        printf("PNG file: width  height");
+    }else{
+        if(argc == 2){
+              char* fpath = argv[1];
+              int width = 0;
+              int height = 0;
+              readPNG(fpath, &width, &height);
+              printf("%d %d", width, height);
+        }
+    }
+
+  return(0);
+}
+

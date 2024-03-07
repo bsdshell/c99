@@ -1,0 +1,9 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// gcc myfile.c -o main
+int main () {
+   printf("Hello World C!");
+
+   return(0);
+}

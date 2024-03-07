@@ -1,0 +1,477 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <AronCLibNew.h>
+
+void free_splitPath2(char ** retppt, int retRow){
+    for(int i = 0; i < retRow; i++){
+        if(retppt[i]){
+            free(retppt[i]);
+            retppt[i] = NULL;
+        }
+    }
+    if(retppt){
+        free(retppt);
+        retppt = NULL;
+    }
+}
+
+char** splitPath2(char* buf, int bufLen, int *retRow, char c){
+   int n = 1024;
+   int k = 0;
+   int count = 0;
+   
+   bool loop = true;
+   bool endLoop = false;
+   int maxRow = 2;
+   int countRow = 0;
+   int inxRow = 0;
+   char** retppt = NULL;
+
+   while(loop){
+       retppt = (char**)malloc(sizeof(char*)*maxRow);
+       for(int i = 0; i < maxRow; i++){
+           retppt[i] = (char*)malloc(sizeof(char)*bufLen);
+       }
+
+       int inx = 0;
+       for(inx = 0; inx < bufLen; inx++){
+		 if(inxRow < maxRow){
+		   if(buf[inx] != c){
+			 retppt[inxRow][k] = buf[inx];
+			 k++;
+		   }else{
+			 if(k > 0){
+			   // NOT '/'
+			   retppt[inxRow][k] = '\0';
+			   inxRow++;
+			   if(inxRow < maxRow){
+				 // '/'
+				 retppt[inxRow][0] = c;
+				 retppt[inxRow][1] = '\0';
+			   }else{
+				 free_splitPath2(retppt, maxRow);
+				 maxRow += 10;
+				 inxRow = 0;
+				 k = 0;
+				 break;
+			   }
+			 }else{
+			   retppt[inxRow][0] = c;
+			   retppt[inxRow][1] = '\0';
+			 }
+			 inxRow++; 
+			 k = 0;
+		   }
+		 }else{
+		   free_splitPath2(retppt, maxRow);
+		   maxRow += 10;
+		   inxRow = 0;
+		   k = 0;
+		   break;
+		 }
+	   }
+	   
+	   if(inx == bufLen){
+		 if(k > 0){
+		   retppt[inxRow][k] = '\0';
+		   inxRow++;
+		   k = 0;
+		 }
+		 
+		 loop = false;
+	   }
+   }
+   *retRow = inxRow;
+   return retppt;
+}
+
+/*
+
+  KEY: concat ALL strings to ONE string
+  
+  pt[0] = "abc"
+  pt[1] = "def"
+  pt[2] = "hij"
+  int len = 3
+  char* str = concatStr(pt, len);
+  str = "abcdefhij"
+
+ */
+char* concatStr(char** pt, int len){
+  char* strPt = NULL;
+  int k = 0;
+  int nByte = 0;
+  for(int i = 0; i < len; i++){
+	nByte += strlen(pt[i]);
+  }
+  strPt = (char*)malloc(sizeof(char)*nByte);
+  
+  for(int i = 0; i < len; i++){
+	int n = strlen(pt[i]);
+	memcpy(strPt + k, pt[i], n);
+	pt[i][n] = '\0';
+	k += n;
+  }
+
+  return strPt;
+}
+
+void free_concatStr(char* strPt){
+  if(strPt){
+	free(strPt);
+	strPt = NULL;
+  }
+}
+
+char** allocateCharPt(int nCol, int nRow){
+  char** ppt = (char**)malloc(sizeof(char*)*nCol);
+  for(int c = 0; c < nRow; c++){
+	ppt[c] = (char*)malloc(sizeof(char)*nRow);
+  }
+  return ppt;
+}
+
+void free_allocateCharPt(char** ppt, int nCol){
+  for(int c = 0; c < nCol; c++){
+	if(ppt[c]){
+	  free(ppt[c]);
+	  ppt[c] = NULL;
+	}
+  }
+  if(ppt){
+	free(ppt);
+  }
+}
+
+void fun(char** pt){
+  *pt = NULL;
+}
+
+// gcc myfile.c -o main
+int main () {
+   pp("Hello World C!\n");
+   {
+	 pp("concatStr 1\n");
+	 int n = 3;
+	 char** pt = (char**)malloc(sizeof(char*)*n);
+	 for(int i = 0; i < n; i++){
+	   pt[i] = (char*)malloc(sizeof(char)*10);
+	   char* str = "abc";
+	   int len = strlen(str);
+	   memcpy(pt[i], str, len);
+	   pt[i][len] = '\0';
+	 }
+	 
+	 char* s = concatStr(pt, n);
+	 pp("s=%s\n", s);
+	 free_concatStr(s);
+	 
+	 for(int i = 0; i < n; i++){
+	   if(pt[i]){
+		 free(pt[i]);
+		 pt[i] = NULL;
+	   }
+	 }
+	 
+
+   }
+   {
+	 char c = '/';
+	 char* str = "/";
+	 int bufLen = strlen(str);
+	 int retRow = 0;
+	 char** retppt = splitPath2(str, bufLen, &retRow, c);
+	 t_int(retRow, 1, " splitPath2 xx 1");
+	 t_charPt(retppt[0], "/", " splitPath2 xx 2");
+	 for(int i = 0; i < retRow; i++){
+	   pp("retppt=%s\n", retppt[i]);
+	 }
+   }
+   {
+	 char c = '/';
+	 char* str = "//";
+	 int bufLen = strlen(str);
+	 int retRow = 0;
+	 char** retppt = splitPath2(str, bufLen, &retRow, c);
+	 t_int(retRow, 2,           " splitPath2 1 ");
+	 t_charPt(retppt[0], "/",   " splitPath2 2");
+	 t_charPt(retppt[1], "/", " splitPath2 3");
+	 for(int i = 0; i < retRow; i++){
+	   pp("retppt=%s\n", retppt[i]);
+	 }
+   }
+   {
+	 char c = '/';
+	 char* str = "/tmp/f.x";
+	 int bufLen = strlen(str);
+	 int retRow = 0;
+	 char** retppt = splitPath2(str, bufLen, &retRow, c);
+	 t_int(retRow, 4,           " splitPath2 1 ");
+	 t_charPt(retppt[0], "/",   " splitPath2 2");
+	 t_charPt(retppt[1], "tmp", " splitPath2 3");
+	 t_charPt(retppt[2], "/",   " splitPath2 4");
+	 t_charPt(retppt[3], "f.x",   " splitPath2 5");
+	 for(int i = 0; i < retRow; i++){
+	   pp("retppt=%s\n", retppt[i]);
+	 }
+   }
+   {
+	 char c = '/';
+	 char* str = "tmp/f.x";
+	 int bufLen = strlen(str);
+	 int retRow = 0;
+	 char** retppt = splitPath2(str, bufLen, &retRow, c);
+	 t_int(retRow, 3,           " splitPath2 1 ");
+	 t_charPt(retppt[0], "tmp",   " splitPath2 2");
+	 t_charPt(retppt[1], "/", " splitPath2 3");
+	 t_charPt(retppt[2], "f.x",   " splitPath2 4");
+	 for(int i = 0; i < retRow; i++){
+	   pp("retppt=%s\n", retppt[i]);
+	 }
+   }
+   {
+	 char c = '/';
+	 char* str = "f.x";
+	 int bufLen = strlen(str);
+	 int retRow = 0;
+	 char** retppt = splitPath2(str, bufLen, &retRow, c);
+	 t_int(retRow, 1,           " splitPath2 1 ");
+	 t_charPt(retppt[0], "f.x",   " splitPath2 2");
+	 for(int i = 0; i < retRow; i++){
+	   pp("retppt=%s\n", retppt[i]);
+	 }
+   }
+   {
+	 char c = '/';
+	 char* str = "/f.x";
+	 int bufLen = strlen(str);
+	 int retRow = 0;
+	 char** retppt = splitPath2(str, bufLen, &retRow, c);
+	 t_int(retRow, 2,           " splitPath2 1 ");
+	 t_charPt(retppt[0], "/",   " splitPath2 2");
+	 t_charPt(retppt[1], "f.x",   " splitPath2 2");
+	 for(int i = 0; i < retRow; i++){
+	   pp("retppt=%s\n", retppt[i]);
+	 }
+   }
+   {
+	 char c = '.';
+	 char* str = "/f.x";
+	 int bufLen = strlen(str);
+	 int retRow = 0;
+	 char** retppt = splitPath2(str, bufLen, &retRow, c);
+	 t_int(retRow, 3,           " splitPath2 1 ");
+	 t_charPt(retppt[0], "/f",   " splitPath2 2");
+	 t_charPt(retppt[1], ".",   " splitPath2 2");
+	 t_charPt(retppt[2], "x",   " splitPath2 2");
+	 for(int i = 0; i < retRow; i++){
+	   pp("retppt=%s\n", retppt[i]);
+	 }
+   }
+   /*
+   {
+	 char c = '/';
+	 char* str = "/d1/d2/d3/f.x";
+	 int bufLen = strlen(str);
+	 int retRow = 0;
+	 char** retppt = splitPath2(str, bufLen, &retRow, c);
+	 t_int(retRow, 5, " splitPath2 5 ");
+	 t_charPt(retppt[0], "", " splitPath2 6");
+	 t_charPt(retppt[1], "d1", " splitPath2 7");
+	 t_charPt(retppt[2], "d2", " splitPath2 8");
+	 t_charPt(retppt[3], "d3", " splitPath2 9");
+	 t_charPt(retppt[4], "f.x", " splitPath2 10");
+	 for(int i = 0; i < retRow; i++){
+	   pp("retppt=%s\n", retppt[i]);
+	 }
+   }
+   
+   {
+	 int n = 10;
+	 char* pt = (char*)malloc(sizeof(char)*n);
+	 char* str = "abc";
+	 int len = strlen(str);
+	 memcpy(pt, str, strlen(str));
+	 pt[len] = '\0';
+
+	 pp("pt=%s\n", pt);
+
+	 free(pt);
+	 
+	 pt = (char*)malloc(sizeof(char)*n);
+	 char* str1 = "abce";
+	 int len1 = strlen(str1);
+	 memcpy(pt, str1, strlen(str1));
+	 pt[len1] = '\0';
+
+	 pp("pt=%s\n", pt);
+
+	 free(pt);
+	 
+   }
+   {
+	 pp("ok\n");
+	 int n = 10;
+	 char* str = "Saurabh Gupt";
+	 int len = strlen(str);
+	 char** pt = (char**)malloc(sizeof(char*)*n);
+	 
+	 for(int i = 0; i < n; i++){
+	   pt[i] = (char*)malloc(sizeof(char)*20);
+	   memcpy(pt[i], str, len);
+	   pt[i][len] = '\0';
+	 }
+
+	 
+	 for(int i = 0; i < n; i++){
+	   // pp("pt=%s\n", pt[i]);
+	 }
+	 
+	 for(int i = 0; i < n; i++){
+	   if(pt[i]){
+		 free(pt[i]);
+		 pt[i] = NULL;
+	   }
+	 }
+
+	 n += 10;
+	 char* str1 = "SnapCommerce";
+	 int len1 = strlen(str);
+	 pt = (char**)malloc(sizeof(char*)*n);
+	 
+	 for(int i = 0; i < n; i++){
+	   pt[i] = (char*)malloc(sizeof(char)*20);
+	   memcpy(pt[i], str1, len1);
+	   pt[i][len1] = '\0';
+	 }
+
+	 for(int i = 0; i < n; i++){
+	   // pp("pt=%s\n", pt[i]);
+	 }
+	 
+	 for(int i = 0; i < n; i++){
+	   if(pt[i]){
+		 free(pt[i]);
+		 pt[i] = NULL;
+	   }
+	 }
+   }
+   */
+
+
+   {
+	 char* pt = "abc";
+	 fun(&pt);
+	 if(pt){
+	   pp("pt is NOT NULL\n");
+	 }else{
+	   pp("pt is NULL\n");
+	 }
+   }
+   
+   {
+	 int nCol = 1;
+	 int nRow = 10;
+	 char* str = "";
+	 int len = strlen(str);
+	 
+	 char** ppt = allocateCharPt(nCol, nRow);
+	 memcpy(ppt[0], str, len);
+	 
+	 ppt[0][len] = '\0';
+
+	 char* strPt = concatStr(ppt, nCol);
+	 t_charPt(strPt, str, "concatStr test 0");
+	 free(strPt);
+	 free_allocateCharPt(ppt, nCol);
+   }
+   {
+	 int nCol = 1;
+	 int nRow = 10;
+	 char* str = "abc";
+	 int len = strlen(str);
+	 
+	 char** ppt = allocateCharPt(nCol, nRow);
+	 memcpy(ppt[0], str, len);
+	 
+	 ppt[0][len] = '\0';
+
+	 char* strPt = concatStr(ppt, nCol);
+	 t_charPt(strPt, str, "concatStr test 1");
+	 free(strPt);
+	 free_allocateCharPt(ppt, nCol);
+   }
+   {
+	 int nCol = 2;
+	 int nRow = 10;
+	 char* str1 = "dog";
+	 char* str2 = "cat";
+	 int len1 = strlen(str1);
+	 int len2 = strlen(str2);
+	 
+	 char** ppt = allocateCharPt(nCol, nRow);
+	 memcpy(ppt[0], str1, len1);
+	 memcpy(ppt[1], str2, len2);
+	 
+	 ppt[0][len1] = '\0';
+	 ppt[1][len2] = '\0';
+	 
+
+	 char* strPt = concatStr(ppt, nCol);
+	 t_charPt(strPt, "dogcat", "concatStr test 2");
+	 free(strPt);
+	 free_allocateCharPt(ppt, nCol);
+   }
+   {
+	 int nCol = 2;
+	 int nRow = 10;
+	 char* str1 = "";
+	 char* str2 = "cat";
+	 int len1 = strlen(str1);
+	 int len2 = strlen(str2);
+	 
+	 char** ppt = allocateCharPt(nCol, nRow);
+	 memcpy(ppt[0], str1, len1);
+	 memcpy(ppt[1], str2, len2);
+	 
+	 ppt[0][len1] = '\0';
+	 ppt[1][len2] = '\0';
+	 
+	 char* strPt = concatStr(ppt, nCol);
+	 t_charPt(strPt, "cat", "concatStr test 3");
+	 pp("strPt=%s\n", strPt);
+	 
+	 free(strPt);
+	 free_allocateCharPt(ppt, nCol);
+   }
+   
+   {
+	 int nCol = 3;
+	 int nRow = 10;
+	 char* str1 = "cat";
+	 char* str2 = "dog";
+	 char* str3 = "cowfox";
+	 int len1 = strlen(str1);
+	 int len2 = strlen(str2);
+	 int len3 = strlen(str3);
+	 
+	 char** ppt = allocateCharPt(nCol, nRow);
+	 memcpy(ppt[0], str1, len1);
+	 ppt[0][len1] = '\0';
+	 memcpy(ppt[1], str2, len2);
+	 ppt[1][len2] = '\0';
+	 memcpy(ppt[2], str3, len3);
+	 ppt[2][len3] = '\0';
+	 
+	 char* strPt = concatStr(ppt, nCol);
+	 t_charPt(strPt, "catdogcowfox", "concatStr test 4");
+	 t_int(strlen(strPt), len1 + len2 + len3, " concatStr check length 1");
+	 pp("strPt=%s\n", strPt);
+	 
+	 free(strPt);
+	 free_allocateCharPt(ppt, nCol);
+   }
+   return(0);
+}

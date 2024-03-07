@@ -1,0 +1,1085 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <AronCLibNew.h>
+#include "my_vector.h"
+
+
+// BEG_flow
+const int IP_LEN = 20;   //  255.255.255.255 + '\0' = 3*4 + 4 + 1;
+const int FLOW_STR_LEN = 200;
+struct flow_ {
+  char source_ip[IP_LEN];
+  char dest_ip[IP_LEN];
+  unsigned short source_port;
+  unsigned short dest_port;
+  unsigned char protocol;
+  unsigned long count;
+} flow_;
+typedef struct flow_ flow;
+
+void flow_to_str(unsigned char* buf, const int size, flow* pt);
+unsigned long hash_flow(flow* pt);
+
+void print_flow(flow* pt){
+  if(pt != NULL){
+	pl("source_ip=[%s]", pt -> source_ip);
+	pl("source_ip len=[%d]", strlen(pt -> source_ip));
+
+	pl("dest_ip=[%s]", pt -> dest_ip);
+	pl("dest_ip len=[%d]", strlen(pt -> dest_ip));
+
+	pl("source_port=[%u]", pt -> source_port);
+	pl("dest_port=[%u]", pt -> dest_port);
+
+	pl("protocol=[%u]", pt -> protocol);
+	pl("count=[%u]", pt -> count);
+  }else{
+	pl("ERROR: pt is NULL");
+  }
+}
+
+char* to_str(flow* pt){
+  
+}
+
+flow* make_flow(){
+  flow* pt = (flow*)malloc(sizeof(flow));
+  strcpy(pt -> source_ip, "127.0.0.1");
+  strcpy(pt -> dest_ip, "127.0.0.2");
+  pt -> source_port = 21;
+  pt -> dest_port = 106;
+  pt -> protocol = 6;    // TCP
+  return pt;
+}
+
+flow* build_flow(
+				 char source_ip[IP_LEN],
+				 char dest_ip[IP_LEN],
+				 unsigned short source_port,
+				 unsigned short dest_port,
+				 unsigned char protocol,
+				 unsigned long count
+				 )
+{
+  flow* pt = (flow*)malloc(sizeof(flow));
+  strcpy(pt -> source_ip, source_ip);
+  pl("test => source_ip=%s", pt -> source_ip);
+  strcpy(pt -> dest_ip, dest_ip);
+  pt -> source_port = source_port;
+  pt -> dest_port = dest_port;
+  pt -> protocol = protocol;    // TCP
+  pt -> count = count;
+  return pt;
+}
+
+// END_flow
+
+
+// BEG_flow_node
+
+struct flow_node_{
+  flow* flowPt;
+  struct flow_node_* next;
+} flow_node_;
+
+typedef struct flow_node_ flow_node;
+
+struct hash_table_{
+  int max;
+  int count;
+  flow_node** flow_node_arr;
+};
+
+typedef struct hash_table_ hash_table;
+
+void hash_table_init(hash_table* self){
+  self -> max = 10;
+  self -> count = 0;
+  self -> flow_node_arr = (flow_node**)malloc(sizeof(flow_node*) * self -> max);
+}
+
+void insert_node(hash_table* self, flow_node* fnPt){
+  if(self -> count < self -> max){
+	unsigned long key = hash_flow(fnPt -> flowPt) % self -> max;
+	flow_node* head = self -> flow_node_arr[key];
+    // BEG insert flow_node here
+	flow_node* fn = insert_flow_node(head, fnPt);
+	// END inert flow_node here
+	self -> count++;
+  }
+}
+
+
+flow_node* add_flow_node(flow_node* head, flow_node* fnPt){
+  flow_node* ret = head;
+  if(head == NULL){
+	// head is NULL
+	ret = fnPt;
+  }else{
+	flow_node* curr = head;
+	while(curr -> next){
+	  curr = curr -> next;
+	}
+	curr -> next = fnPt;
+  }
+  return ret;
+}
+
+bool is_equal_flow_str(flow* flowPt1, flow* flowPt2){
+  unsigned char buf1[FLOW_STR_LEN];
+  unsigned char buf2[FLOW_STR_LEN]; 
+  flow_to_str(buf1, FLOW_STR_LEN, flowPt1);
+  flow_to_str(buf2, FLOW_STR_LEN, flowPt2);
+  return strcmp(buf1, buf2) == 0;
+}
+
+flow_node* insert_flow_node(flow_node* head, flow_node* fnPt){
+  flow_node* ret = head;
+  if(head == NULL){
+	// head is NULL
+	ret = fnPt;
+  }else{
+	// Compare each node
+	// if two node have the same string
+	//    break from the loop
+	// otherwise, continue
+	flow_node* curr = head;
+	while(curr -> next){
+	  if(!is_equal_flow_str(curr -> flowPt, fnPt -> flowPt)){
+		curr = curr -> next;
+      }else{
+		break;
+	  }
+	}
+	if(curr ->next == NULL){
+	  curr -> next = fnPt;
+	}
+  }
+  return ret;
+}
+
+void print_flow_node(flow_node* pt){
+  if(pt != NULL){
+	pl("xxxip=>%s", pt -> flowPt -> source_ip);
+	print_flow(pt -> flowPt);
+  }else{
+	pl("ERROR: print_flow_node => flod_node* pt is NULL");
+  }
+}
+
+void print_flow_node_list(flow_node* head){
+  flow_node* curr = head;
+  int count = 0;
+  while(curr){
+	print_flow_node(curr);
+	fl("+++");
+	curr = curr -> next;
+	count++;
+  }
+  pl("count node=>%d", count);
+}
+
+bool isBucketEmpty(flow_node* pt){
+  bool ret = false;
+  if(pt != NULL){
+	pl("pt is not NULL KKK");
+	ret = (pt -> flowPt == NULL) ? true : false; 
+  }else{
+	pl("ERROR: flow_node* pt is NULL");
+	exit(1);
+  }
+  return ret;
+}
+
+// END_flow_node
+
+// BEG_hash_table
+
+// END_hash_table
+
+struct Person_{
+    char name[50];
+    int age;
+} Person_;
+
+typedef struct Person_ person; 
+
+struct MyStuff_{
+  int n;
+  char* str;
+  void (*free)(struct MyStuff_*);
+  void (*add)(struct MyStuff_*, void*);
+} MyStuff_;
+
+typedef struct MyStuff_ MyStuff;
+
+void mystuff_free(MyStuff* self){
+  free(self -> str);
+}
+
+void mystuff_add(MyStuff* self, void* data){
+}
+
+void mystuff_init(MyStuff* self){
+  self -> n = 0;
+  self -> str = (char*)malloc(sizeof(char) * 50);
+  self -> add = mystuff_add;
+}
+
+// BEG_single_linked_list
+struct Node_{
+  unsigned long key;
+  char arr[100];
+  struct Node_ *next;
+  // void (*add)(struct Node_* self);
+} Node_;
+
+typedef struct Node_ node;
+
+node* add(node* self, node* npt){
+  if(self == NULL){
+	return npt;
+  }else{
+	// Go to the last node
+	node* curr = self;
+	while(curr -> next){
+	  curr = curr -> next;
+	}
+	curr -> next = npt;
+	return curr;
+  }
+}
+
+node* remove_first(node* self){
+  node* curr = self;
+  if(curr){
+	node* tmp = curr;
+	curr = curr -> next;
+	free(tmp);
+  }
+  return curr;
+}
+
+node* remove_last(node* self){
+  node* head;
+  node* curr;
+  head = curr = self;
+  node* prev = NULL;
+  if(curr){
+	while(curr -> next){
+	  prev = curr;
+	  curr = curr -> next;
+	}
+  }
+  if(prev){
+	// More than one node
+	prev -> next = NULL;
+  }else{
+	// One node ONLY
+	head = NULL;
+  }
+  free(curr);
+  return head;
+}
+
+node* make_node(unsigned long key, const char* str){
+  node* pt = (node*)malloc(sizeof(node));
+  pt -> key = key;
+  strcpy(pt -> arr, str);
+  pt -> next = NULL;
+  return pt;
+}
+
+void print_list(node* head){
+  node* curr = head;
+  while(curr){
+	printf("key=[%d] arr=[%s]\n", curr -> key, curr -> arr);
+	curr = curr -> next;
+  }
+}
+
+void free_node(node* self){
+  node* curr = self;
+  while(curr){
+	node* next = curr -> next;
+	free(curr);
+	curr = next;
+  }
+}
+
+
+// END_single_linked_list
+
+// https://stackoverflow.com/questions/7666509/hash-function-for-string
+unsigned long hash(unsigned char *str){
+  unsigned long hash = 5381;
+  int c;
+  while(c = *str++){
+	// pp("%d\n", c);
+	hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+  }
+  return hash;
+}
+
+void printCharPt2d(char** pt, int nCol){
+  for(int i = 0; i < nCol; i++){
+	printf("[%s]\n", pt[i]);
+  }
+}
+
+void fun(char** pt){
+  *pt = NULL;
+}
+
+void myfun(person* pt){
+    strcpy(pt -> name, "Andrew Brown");
+    pt -> age = 31;
+}
+
+void to_string(char* restrict_str, size_t size, const char* restrict_format, ...){
+  snprintf(restrict_str, size, restrict_format);
+}
+
+void test3(){
+   pp("Hello World C!\n");
+   {
+	 char c = '/';
+	 char* str = "/";
+	 int bufLen = strlen(str);
+	 int retRow = 0;
+	 char** retppt = splitStrChar(str, bufLen, &retRow, c);
+	 t_int(retRow, 3, " splitStrChar xx 1");
+	 t_charPt(retppt[0], "", " splitStrChar xx 2");
+	 t_charPt(retppt[1], "/", " splitStrChar xx 2");
+	 t_charPt(retppt[2], "", " splitStrChar xx 2");
+	 printCharPt2d(retppt, retRow);
+   }
+   {
+	 char c = '/';
+	 char* str = "//";
+	 int bufLen = strlen(str);
+	 int retRow = 0;
+	 char** retppt = splitStrChar(str, bufLen, &retRow, c);
+	 t_int(retRow, 5,           " splitStrChar 1 ");
+	 t_charPt(retppt[0], "",   " splitStrChar 2");
+	 t_charPt(retppt[1], "/", " splitStrChar 3");
+	 t_charPt(retppt[2], "", " splitStrChar  4");
+	 t_charPt(retppt[3], "/", " splitStrChar  5");
+	 t_charPt(retppt[4], "", " splitStrChar  5");
+	 printCharPt2d(retppt, retRow);
+   }
+   {
+	 char c = '/';
+	 char* str = "/tmp/f.x";
+	 int bufLen = strlen(str);
+	 int retRow = 0;
+	 char** retppt = splitStrChar(str, bufLen, &retRow, c);
+	 t_int(retRow, 5,           " splitStrChar kk 1 ");
+	 t_charPt(retppt[0], "",    " splitStrChar kk 2");
+	 t_charPt(retppt[1], "/",   " splitStrChar kk 3");
+	 t_charPt(retppt[2], "tmp", " splitStrChar kk 4");
+	 t_charPt(retppt[3], "/",   " splitStrChar kk 5");
+	 t_charPt(retppt[4], "f.x",   " splitStrChar kk 6");
+	 printCharPt2d(retppt, retRow);
+
+   }
+   {
+	 char c = '/';
+	 char* str = "tmp/f.x";
+	 int bufLen = strlen(str);
+	 int retRow = 0;
+	 char** retppt = splitStrChar(str, bufLen, &retRow, c);
+	 t_int(retRow, 3,           " splitStrChar ee 1 ");
+	 t_charPt(retppt[0], "tmp",   " splitStrChar ee 2");
+	 t_charPt(retppt[1], "/", " splitStrChar ee 3");
+	 t_charPt(retppt[2], "f.x",   " splitStrChar ee 4");
+	 printCharPt2d(retppt, retRow);
+   }
+   {
+	 char c = '/';
+	 char* str = "f.x";
+	 int bufLen = strlen(str);
+	 int retRow = 0;
+	 char** retppt = splitStrChar(str, bufLen, &retRow, c);
+	 t_int(retRow, 1,           " splitStrChar cc 1 ");
+	 t_charPt(retppt[0], "f.x",   " splitStrChar cc 2");
+	 for(int i = 0; i < retRow; i++){
+	   pp("retppt=%s\n", retppt[i]);
+	 }
+   }
+   {
+	 char c = '/';
+	 char* str = "/f.x";
+	 int bufLen = strlen(str);
+	 int retRow = 0;
+	 char** retppt = splitStrChar(str, bufLen, &retRow, c);
+	 t_int(retRow, 3,           " splitStrChar jj 1 ");
+	 t_charPt(retppt[0], "",   " splitStrChar jj 2");
+	 t_charPt(retppt[1], "/",   " splitStrChar jj 3");
+	 t_charPt(retppt[2], "f.x",   " splitStrChar jj 4");
+	 
+	 printCharPt2d(retppt, retRow);
+
+   }
+   {
+	 char c = '.';
+	 char* str = "/f.x";
+	 int bufLen = strlen(str);
+	 int retRow = 0;
+	 char** retppt = splitStrChar(str, bufLen, &retRow, c);
+	 t_int(retRow, 3,           " splitStrChar bb 1 ");
+	 t_charPt(retppt[0], "/f",   " splitStrChar bb 2");
+	 t_charPt(retppt[1], ".",   " splitStrChar bb 3");
+	 t_charPt(retppt[2], "x",   " splitStrChar bb 4");
+	 printCharPt2d(retppt, retRow);
+	 
+   }
+   {
+	 char* pt = "abc";
+	 fun(&pt);
+	 if(pt){
+	   pp("pt is NOT NULL\n");
+	 }else{
+	   pp("pt is NULL\n");
+	 }
+   }
+   
+   {
+	 int nCol = 1;
+	 int nRow = 10;
+	 char* str = "";
+	 int len = strlen(str);
+	 
+	 char** ppt = allocateCharPt(nCol, nRow);
+	 memcpy(ppt[0], str, len);
+	 
+	 ppt[0][len] = '\0';
+
+	 char* strPt = concatStr(ppt, nCol);
+	 t_charPt(strPt, str, "concatStr test 0");
+	 free(strPt);
+	 free_allocateCharPt(ppt, nCol);
+   }
+   {
+	 int nCol = 1;
+	 int nRow = 10;
+	 char* str = "abc";
+	 int len = strlen(str);
+	 
+	 char** ppt = allocateCharPt(nCol, nRow);
+	 memcpy(ppt[0], str, len);
+	 
+	 ppt[0][len] = '\0';
+
+	 char* strPt = concatStr(ppt, nCol);
+	 t_charPt(strPt, str, "concatStr test 1");
+	 free(strPt);
+	 free_allocateCharPt(ppt, nCol);
+   }
+   {
+	 int nCol = 2;
+	 int nRow = 10;
+	 char* str1 = "dog";
+	 char* str2 = "cat";
+	 int len1 = strlen(str1);
+	 int len2 = strlen(str2);
+	 
+	 char** ppt = allocateCharPt(nCol, nRow);
+	 memcpy(ppt[0], str1, len1);
+	 memcpy(ppt[1], str2, len2);
+	 
+	 ppt[0][len1] = '\0';
+	 ppt[1][len2] = '\0';
+	 
+
+	 char* strPt = concatStr(ppt, nCol);
+	 t_charPt(strPt, "dogcat", "concatStr test 2");
+	 free(strPt);
+	 free_allocateCharPt(ppt, nCol);
+   }
+   {
+	 int nCol = 2;
+	 int nRow = 10;
+	 char* str1 = "";
+	 char* str2 = "cat";
+	 int len1 = strlen(str1);
+	 int len2 = strlen(str2);
+	 
+	 char** ppt = allocateCharPt(nCol, nRow);
+	 memcpy(ppt[0], str1, len1);
+	 memcpy(ppt[1], str2, len2);
+	 
+	 ppt[0][len1] = '\0';
+	 ppt[1][len2] = '\0';
+	 
+	 char* strPt = concatStr(ppt, nCol);
+	 t_charPt(strPt, "cat", "concatStr test 3");
+	 pp("strPt=%s\n", strPt);
+	 
+	 free(strPt);
+	 free_allocateCharPt(ppt, nCol);
+   }
+   
+   {
+	 int nCol = 3;
+	 int nRow = 10;
+	 char* str1 = "cat";
+	 char* str2 = "dog";
+	 char* str3 = "cowfox";
+	 int len1 = strlen(str1);
+	 int len2 = strlen(str2);
+	 int len3 = strlen(str3);
+	 
+	 char** ppt = allocateCharPt(nCol, nRow);
+	 memcpy(ppt[0], str1, len1);
+	 ppt[0][len1] = '\0';
+	 memcpy(ppt[1], str2, len2);
+	 ppt[1][len2] = '\0';
+	 memcpy(ppt[2], str3, len3);
+	 ppt[2][len3] = '\0';
+	 
+	 char* strPt = concatStr(ppt, nCol);
+	 t_charPt(strPt, "catdogcowfox", "concatStr test 4");
+	 t_int(strlen(strPt), len1 + len2 + len3, " concatStr check length 1");
+	 pp("strPt=%s\n", strPt);
+	 
+	 free(strPt);
+	 free_allocateCharPt(ppt, nCol);
+   }
+   {
+	 fw("Vector 1");
+	 Vector vector;
+	 vector_init(&vector);
+	 t_int(vector.count, 0, "test count");
+	 t_int(vector.limit, 4, "test limit");
+	 vector.free(&vector);
+   }
+   {
+	 fw("Vector 2");
+	 Vector vector;
+	 vector_init(&vector);
+	 vector.push_back(&vector, "abcd");
+	 t_int(vector.count, 1, "count");
+	 t_int(vector.limit, 4, "limit");
+	 vector.free(&vector);
+   }
+   {
+	 fw("Vector 3");
+	 Vector vector;
+	 vector_init(&vector);
+	 
+	 vector.push_back(&vector, "abcd");
+	 t_int(vector.count, 1, "count");
+	 vector.remove(&vector, 0);
+	 t_int(vector.count, 0, "count");
+	 t_int(vector.limit, 4, "limit");
+	 
+	 vector.free(&vector);
+   }
+   {
+	 fw("Vector 4");
+	 Vector vector;
+	 vector_init(&vector);
+	 vector.push_back(&vector, "abcd");
+	 vector.push_back(&vector, "efgh");
+	 vector.push_back(&vector, "ijkl");
+	 vector.push_back(&vector, "mnop");
+	 t_int(vector.count, 4, "count");
+	 t_int(vector.limit, 4, "limit");
+
+	 vector.push_back(&vector, "qrst");
+	 t_int(vector.count, 5, "count");
+	 t_int(vector.limit, 8, "limit");
+	 
+	 for(int i = 0; i < vector.count; i++){
+	   printf("%s\n", (char*)vector.data[i]);
+	 }
+	 
+	 vector.free(&vector);
+   }
+   {
+	 fw("Vector 5");
+	 Vector vector;
+	 vector_init(&vector);
+	 vector.push_back(&vector, "abcd");
+	 vector.push_back(&vector, "efgh");
+	 vector.push_back(&vector, "ijkl");
+	 vector.push_back(&vector, "mnop");
+	 vector.push_back(&vector, "qrst");
+	 vector.remove(&vector, 0);
+	 vector.remove(&vector, 0);
+	 vector.remove(&vector, 0);
+	 vector.remove(&vector, 0);
+	 vector.remove(&vector, 0);
+	 vector.remove(&vector, 0);
+	 t_int(vector.count, 0, "count");
+	 t_int(vector.limit, 8, "limit");
+	 
+	 for(int i = 0; i < vector.count; i++){
+	   printf("%s\n", (char*)vector.data[i]);
+	 }
+	 
+	 vector.free(&vector);
+   }
+   {
+	 fw("MyStuff 1");
+	 MyStuff stuff;
+	 mystuff_init(&stuff);
+   }
+   {
+	 char *str = "120.33.44.55";
+	 unsigned long h = hash(str);
+	 printf("hash=%d\n", h);
+   }
+   {
+	 int n = 3;
+	 int m = pow(2, 5);
+	 printf("kkn=%d\n", n * m);
+	 printf("kkn=%d\n", n << 5);
+   }
+   {
+	 char* s = "abc";
+	 char arr[10];
+	 int len = strlen(s);
+	 strncpy(arr, s, len);
+	 printf("Need null str at the end of string arr=[%s]\n", arr);
+	 arr[len] = '\0';
+	 printf("Ok, arr=[%s]\n", arr);
+   }
+  
+}
+
+void test2(){
+   {
+	 fw("node 1");
+	 node *pt = (node*)malloc(sizeof(node));
+	 pt -> key = 100;
+	 char* s = "abc";
+	 int len = strlen(s);
+	 strcpy(pt -> arr, s);
+	 print_list(pt);
+	 free(pt);
+   }
+   {
+	 fw("node 2");
+	 node *head = (node*)malloc(sizeof(node));
+	 head -> key = 100;
+	 char* s = "abc";
+	 int len = strlen(s);
+	 strcpy(head -> arr, s);
+	 head -> next = NULL;
+	 // add node
+	 node* next = (node*)malloc(sizeof(node));
+	 next -> key = 25519;
+	 char* s1 = "curve25519";
+	 int len1 = strlen(s1);
+	 strcpy(next -> arr, s1);
+	 next -> next = NULL;
+	 
+	 head -> next = next;
+	 
+	 node* curr = head;
+     print_list(curr);
+	 free(head);
+   }
+   {
+	 fw("node 3");
+	 node *head = NULL;
+	 node *curr = head;
+	 print_list(curr);
+	 free_node(head);
+   }
+   {
+	 fw("node 4");
+	 node *head = make_node(500, "Grag Miller");
+	 node *curr = head;
+	 print_list(curr);
+	 free_node(head);
+   }
+   {
+	 fw("node 5");
+	 node *head = make_node(500, "Grag Miller");
+	 node *n1 = make_node(600, "Elliptic Curve");
+	 head = add(head, n1);
+	 node *curr = head;
+	 print_list(curr);
+	 free_node(head);
+   }
+   {
+	 fw("node 6");
+	 node *head = make_node(500, "Grag Miller");
+	 node *n1 = make_node(600, "Elliptic Curve");
+	 node *n2 = make_node(700, "Fermat Last Theorem FLT");
+	 head = add(head, n1);
+	 head = add(head, n2);
+	 node *curr = head;
+	 print_list(curr);
+	 free_node(head);
+   }
+   {
+	 fw("node 7");
+	 node *head = NULL;
+	 node *n1 = make_node(800, "TCP UDP");
+	 head = add(head, n1);
+	 node* curr = head;
+	 print_list(curr);
+	 free_node(head);
+   }
+   {
+	 fw("node remove_first 1");
+	 node *head = NULL;
+	 node *n1 = make_node(800, "TCP UDP");
+	 head = add(head, n1);
+	 node* new_head = remove_first(head);
+	 t_voidPt(new_head, NULL, "new_head is NULL");
+	 free_node(new_head);
+   }
+   {
+	 fw("node remove_first 2");
+	 node *head = NULL;
+	 char* s1 = "TCP UDP";
+	 node *n1 = make_node(800, s1);
+	 char* s2 = "FreeBSD";
+	 node *n2 = make_node(900, s2);
+	 head = add(head, n1);
+	 head = add(head, n2);
+	 node* new_head = remove_first(head);
+	 print_list(new_head);
+	 t_int(new_head -> key, 900, "key");
+	 t_charPt(new_head -> arr, s2, "arr");
+	 free_node(new_head);
+   }
+   {
+	 fw("node remove_last 1");
+	 node *head = NULL;
+	 char* s1 = "TCP UDP";
+	 node *n1 = make_node(800, s1);
+	 char* s2 = "FreeBSD";
+	 node *n2 = make_node(900, s2);
+	 head = add(head, n1);
+	 head = add(head, n2);
+	 node* new_head = remove_last(head);
+	 t_int(new_head -> key, 800, "key");
+	 t_charPt(new_head -> arr, s1, "arr");
+   }
+   {
+	 fw("node remove_last 1");
+	 node *head = NULL;
+	 char* s1 = "TCP UDP";
+	 node *n1 = make_node(800, s1);
+	 char* s2 = "FreeBSD";
+	 node *n2 = make_node(900, s2);
+	 head = add(head, n1);
+	 head = add(head, n2);
+	 node* new_head = remove_last(head);
+	 new_head       = remove_last(new_head);
+	 t_voidPt(new_head, NULL, "new_head");
+   }
+   {
+	 fw("node remove_last 2");
+	 node *head = NULL;
+	 char* s1 = "TCP UDP";
+	 node *n1 = make_node(800, s1);
+	 head = add(head, n1);
+	 node* new_head = remove_last(head);
+	 t_voidPt(new_head, NULL, "new_head");
+   }
+   {
+       person* pt = (person*)malloc(sizeof(person));
+       myfun(pt);
+       printf("name=%s age=%d\n", pt -> name, pt -> age);
+
+       free(pt);
+   }
+   /*
+   {
+	 fw("node 4");
+	 node *head = NULL;
+	 head = make_node(100, "root node");
+	 node* next = make_node(300, "my curve");
+	 node* n1 = make_node(400, "node n1");
+	 
+	 add(head, next);
+	 add(head, n1);
+
+	 node* curr = head;
+	 while(curr){
+	   printf("%d %s\n", curr -> key, curr -> arr);
+	   curr = curr -> next;
+	 }
+	 free_node(head);
+	 
+   }
+   */  
+}
+
+void flow_to_str(unsigned char* buf, const int size, flow* pt){
+  snprintf(buf, size, "%s-%s-%u-%u-%u", pt -> source_ip, pt -> dest_ip, pt -> source_port, pt -> dest_port, pt -> protocol);
+}
+
+unsigned long hash_flow(flow* pt){
+	char buf[FLOW_STR_LEN];
+	flow_to_str(buf, FLOW_STR_LEN, pt);
+	pl("buf=[%s]", buf);
+	unsigned long h = hash(buf);
+	return h;
+}
+
+void test1(){
+  {
+	 fw("Vector 00");
+	 int num = 10;
+	 flow** arr = (flow**)malloc(sizeof(flow*) * num);
+	 Vector vector;
+	 vector_init(&vector);
+	 
+	 flow* pt = build_flow(
+						   "127.0.0.1",
+						   "127.0.0.2",
+						   21,
+						   106,
+						   6,
+						   5
+						   );
+	 vector.push_back(&vector, pt);
+
+	 for(int i = 0; i < num; i++){
+	        arr[i] = build_flow(
+							 "127.0.0.2",
+							 "127.0.0.3",
+							 121,
+							 1006,
+							 60,
+							 50
+							 );
+	   vector.push_back(&vector, arr[i]);
+	 }
+
+
+
+	 
+	 for(int i = 0; i < vector.count; i++){
+	   print_flow((flow*)vector.data[i]);
+	   fw("Greg");
+	 }
+	 
+	 for(int i = 0; i < num; i++){
+	   free(arr[i]);
+	 }
+
+	 free(pt);
+	 vector.free(&vector);
+   }
+  {
+	fw("snprintf 0");
+	const int BUSIZE = 200;
+	char buf[BUSIZE];
+	char* s = "Souvenir";
+	pp("len=%d", strlen(buf));
+	snprintf(buf, BUSIZE, "%s-%d-%f", s, 400, 3.1415);
+	pl("ok");
+	pl(buf);
+  }
+  {
+	fw("snprintf 1");
+	const int BUSIZE = 200;
+	char buf[BUSIZE];
+	char* s = "Souvenir";
+	pl("sizeof buf=%d", sizeof buf);
+	snprintf(buf, sizeof buf, "%s-%d-%f", s, 400, 3.1415);
+	pl("ok");
+	pl(buf);
+  }
+  {
+	fw("flow_to_str 1");
+	flow* pt = make_flow();
+	const int BUSIZE = 200;
+	char buf[BUSIZE];
+	flow_to_str(buf, BUSIZE, pt);
+	pl(buf);
+	pl("len=%d", strlen(buf));
+	pl("hash=%u", hash(buf));
+	pl("hash=%u", hash("abc"));
+	pl("hash=%u", hash("123"));
+  }
+  {
+	fw("flow_node 1k");
+	flow* pt = make_flow();
+	print_flow(pt);
+	unsigned long h = hash_flow(pt);
+	flow_node* fn = (flow_node*)malloc(sizeof(flow_node));
+	// fn -> pt = (flow*) malloc(sizeof(flow));
+	fn -> flowPt = make_flow();
+	unsigned long hash = hash_flow(fn -> flowPt);
+	fw("print_flow_node 0");
+	print_flow_node(fn);
+	pl("%u", hash);
+
+	free(pt);
+	free(fn);
+  }
+  
+  {
+	fw("test flow_node 11");
+	flow* flowPt = build_flow(
+						"127.0.0.1",
+						"127.0.0.2",
+						21,
+						106,
+						10,
+						5
+						);
+	print_flow(flowPt);
+	free(flowPt);
+  }
+  {
+    fw("print_flow_node");
+	flow_node* fpt = (flow_node*)malloc(sizeof(flow_node));
+	flow* flowPt = build_flow(
+						"127.0.0.1",
+						"127.0.0.2",
+						21,
+						106,
+						10,
+						5
+						);
+	fpt -> flowPt = flowPt;
+	print_flow_node(fpt);
+	free(flowPt);
+	free(fpt);
+  }
+  {
+	int num = 4;
+	int* pt = (int*)malloc(sizeof(int) * num);
+	for(int i = 0; i < num; i++){
+	  pt[i] = i; 
+	}
+
+	for(int i = 0; i < num; i++){
+	  pl("%x", &pt[i]);
+	  pl("%d", pt[i]);
+	}
+  }
+  {
+	fl("is_equal_flow_str 1");
+	flow* flowPt1 = build_flow(
+					"127.0.0.2",
+					"127.0.0.3",
+					121,
+					1006,
+					60,
+					50
+					);
+
+	flow* flowPt2 = build_flow(
+					"127.0.0.2",
+					"127.0.0.3",
+					121,
+					1006,
+					60,
+					50
+					);
+	bool b = is_equal_flow_str(flowPt1, flowPt2);
+    t_bool(b, true, "Same Flow");
+  }
+  {
+	fl("is_equal_flow_str 2");
+	flow* flowPt1 = build_flow(
+					"127.0.0.2",
+					"127.0.0.3",
+					121,
+					1006,
+					60,
+					50
+					);
+
+	flow* flowPt2 = build_flow(
+					"127.0.0.2",
+					"127.0.0.3",
+					122,
+					1006,
+					60,
+					50
+					);
+	bool b = is_equal_flow_str(flowPt1, flowPt2);
+    t_bool(b, false, "Different Flow");
+  }
+  {
+	bool b = false;
+	if(!b){
+	  pl("reverse bool");
+	}
+  }
+  {
+	fw("thing kk");
+	struct thing_ {
+	  char arr[10];
+	  int n;
+	} thing_;
+	typedef struct thing_ thing;
+	pl("thing=%d", sizeof(thing));
+  }
+  {
+	fw("flow_node 2");
+	fw("print_flow_node 333");
+
+	int buf_len = 4;
+	unsigned long * hash_arr = (unsigned long*) malloc(sizeof(unsigned long) * buf_len);
+	flow_node** flow_node_arr = (flow_node**)malloc(sizeof(flow_node*)* buf_len);
+
+	
+	for(int i = 0; i < buf_len; i++){
+	  flow_node_arr[i] = NULL;
+	}
+	
+	for(int i = 0; i < buf_len + 2; i++){
+		flow* flowPt = build_flow(
+									"127.0.0.1",
+									"127.0.0.2",
+									21,
+									106,
+									10 + i,
+									5
+								);
+
+		unsigned long hash = hash_flow(flowPt); 
+		unsigned long key = hash % buf_len;
+
+		pl("Bucket is empty => key=%u", key);
+		flow_node* fnPt = (flow_node*)malloc(sizeof(flow_node));
+		fnPt -> flowPt = flowPt;
+		fnPt -> next = NULL;
+		flow_node_arr[key] = add_flow_node(flow_node_arr[key], fnPt);
+	}
+	fw("print_flow_node inside 44");
+	for(int i = 0; i < buf_len; i++){
+	  print_flow_node(flow_node_arr[i]);
+	  pl("");
+	}
+
+	fw("print_flow_node_list 11");
+	for(int i = 0; i < buf_len; i++){
+	  pl("key=%u", i);
+	  print_flow_node_list(flow_node_arr[i]);
+	  pl("--");
+	}
+  }
+  {
+
+  }
+}
+
+
+/*
+  gcc try.c -o try
+  COMPILE: run.sh
+*/
+int main () {
+  
+  // test3();
+  // test2();
+  test1();
+   return(0);
+}
