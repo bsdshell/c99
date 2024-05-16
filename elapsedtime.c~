@@ -1,0 +1,36 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <time.h>
+
+int main() {
+    long nano = 1E9;
+    struct timespec start_time, end_time;
+
+    // Get the start time
+    clock_gettime(CLOCK_REALTIME, &start_time);
+
+    // Perform some CPU-intensive task
+    // For demonstration purposes, let's just sleep for a short duration
+    // to simulate a CPU-intensive operation.
+    // Replace this with your actual CPU-intensive task.
+    usleep(1000);  // Sleep for 10 milliseconds
+
+    // Get the end time
+    clock_gettime(CLOCK_REALTIME, &end_time);
+
+    printf("start_time.tv_sec  %09ld\n", start_time.tv_sec);
+    printf("start_time.tv_nsec %09ld\n", start_time.tv_nsec);
+    printf("end_time.tv_sec  %09ld\n", end_time.tv_sec);
+    printf("end_time.tv_nsec %09ld\n", end_time.tv_nsec);
+
+    // Calculate the elapsed time
+    long seconds = end_time.tv_sec - start_time.tv_sec;
+    long nanoseconds = end_time.tv_nsec - start_time.tv_nsec;
+
+    // Print the elapsed time
+    printf("Elapsed time: %ld %09ld seconds\n", seconds, nanoseconds);
+    printf("Elapsed time: %ld %09f seconds\n", seconds, (double)nanoseconds/nano);
+
+    return 0;
+}
+

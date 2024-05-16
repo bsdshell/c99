@@ -61,10 +61,17 @@ outName="$ff/runbin/try"
 # run="g++ -I$clib -std=c++14 -O3 -Wall -pedantic takeName.cpp -o takeName"
 
 # -lm link math library
-run="gcc -I$clib  -Wall try.c -o try -lm && ./try"
+run="gcc -I$clib  -Wall try1.c -o try1 -lm && ./try1"
 
 printc 200 "$run"
 eval "$run"
+
+mydate=$(date)
+if [[ "$?" -eq 0 ]]; then
+  notify.sh "OK: $mydate"
+else
+  notify.sh "ERROR: $mydate"
+fi
 
 # cmake -H. -Bbuild
 # cmake --build build -- -j3

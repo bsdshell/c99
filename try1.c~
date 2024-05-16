@@ -1,0 +1,407 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <stdbool.h>
+#include "/Users/aaa/myfile/github/c99lib/AronCLibNew.h"
+#include "/Users/aaa/myfile/github/c99libtest/my_vector.h"
+
+/*
+    COMPILE: gcc -I../clib try1.c -o try1
+    COMPILE: run.sh
+*/
+
+void fun(int* arr, int len, int width){
+  int nRow = len / width;
+  for(int i = 0; i < nRow; i++){
+	for(int j = 0; j < width; j++){
+	  printf("%d ", arr[width*i + j]);
+	}
+	printf("\n");	
+  }
+}
+
+void rowDiv(int n, int* arr, int r0, int w){
+  for(int i = 0; i < w; i++){
+	arr[r0*w + i] = arr[r0*w + i]/n;
+  }
+}
+
+
+int gcd_array(int* arr, int len){
+  if(len > 0){
+	int a = arr[0];
+	if(len > 1){
+		for(int i = 1; i < len; i++){
+		  int b = arr[i];
+		  printf("i=%d a=%d b=%d\n", i, a, b);
+		  a = gcd_c(a, b);
+		}
+	}
+	return a;
+  }else{
+	printf("ERROR: len=%d", len);
+  }
+}
+
+void remove_zero(int* arr, int len){
+  int k = 0;
+  int i = 0;
+  int j = len - 1;
+  while(i < j){
+	while(arr[i] != 0){
+	  i++;
+	}
+	while(arr[j] == 0){
+	  j--;
+	}
+	if(i < j){
+	  swap(arr, i, j);
+	  i++;
+	  j--;
+	}
+  }
+}
+int gcd_array_positive(int* arr, int len){
+  int k = 0;
+  int* buf = (int*)malloc(sizeof(int)*len);
+  for(int i = 0; i < len; i++){
+	if(arr[i] != 0){
+	  buf[k] = arr[i];
+	  k++;
+	}
+  }
+  if(k > 0){
+	int a = buf[0];
+	if(k > 1){
+	  for(int i = 1; i < k; i++){
+		int b = arr[i];
+		printf("i=%d a=%d b=%d k=%d\n", i, a, b, k);
+		a = gcd_c(abs(a), abs(b));
+	  }
+	}
+	free(buf);
+	return a;
+  }else{
+	return -1;
+  }
+}
+
+
+int add(int a, int b){ return a + b; };
+int mul(int a, int b){ return a * b; };
+
+int main () {
+  printf("try1.c\n");
+  
+  const int len = 9;
+  const int width = 3;
+  int arr[len];
+  fun(arr, len, width);
+
+  long seed = 101;
+
+  {
+    int i = 0;
+    while(i < 10){
+      long r = randomNum(seed);
+      long m = r % 10;
+      float fn = m/10.0;
+      if(m != 0){
+        i++;
+        printf("r=%d m=%d fn=%0.2f\n", r, m, fn);
+      }
+      seed = r;
+    }
+  }
+  {
+    int arr[10];
+    fillArray(arr, 10, 0, 1);
+    print_array_int(arr, 10, 5);
+  }
+  {
+    int len = 9;
+    double* pt = (double*)malloc(sizeof(double) * len);
+    geneArrayDouble(pt, len);
+    print_array_double(pt, len, 3);
+	
+	free(pt);
+  }
+  {
+    int len = 9;
+    float* pt = (float*)malloc(sizeof(float) * len);
+    gene_array_float(pt, len);
+    print_array_float(pt, len, 3);
+	
+	free(pt);
+  }
+  {
+	/* a1 1   2  6  24
+     *    {1} 2  3  4   => 24
+	 *    1  {2} 3  4   => 12
+     *    1   2 {3} 4   => 8
+	 *    1   2  3 {4}  => 6
+	 *    6   6  3  1
+	 *
+	 */
+	const int len = 4;
+	int arr[len] = {2, 3, 4, 5};
+	int a1[len];
+	int a2[len];
+	a1[0] = 1;
+	a2[len-1] = 1;
+	int m = 1;
+	
+	for(int i = 1;  i < len; i++){
+	  int rx = len - 1 - i + 1; // reverse index
+	  a1[i] =  a1[i-1]*arr[i-1];     // ->[ ] -> []
+	  a2[rx - 1] = a2[rx]*arr[rx];  // <-[ ] <- []
+	}
+	
+	for(int i = 0; i < len; i++){
+	  a2[i] = a1[i] * a2[i];
+	}
+	print_array_int(a1, len, 1);
+	fw("a2");
+	print_array_int(a2, len, 1);
+	fw("final array");
+	print_array_int(a2, len, 1);
+	printf("m=%d\n", m);
+  }
+  {
+  	int n = gcd_c(0, 1);
+	t_int(n, 1, "t0");
+	
+	n = gcd_c(1, 0);
+	t_int(n, 1, "t1");
+	
+	n = gcd_c(1, 1);
+	t_int(n, 1, "t2");
+	
+	n = gcd_c(2, 2);
+	t_int(n, 2, "t3");
+	
+	n = gcd_c(3, 9);
+	t_int(n, 3, "t4");
+	
+	n = gcd_c(12, 18);
+	t_int(n, 6, "t5");
+  }
+  {
+	int n = lcm(0, 1);
+	t_int(n, 0, "t0");
+	n = lcm(1, 0);
+	t_int(n, 0, "t1");
+	n = lcm(1, 4);
+	t_int(n, 4, "t2");
+	n = lcm(2, 4);
+	t_int(n, 4, "t3");
+	n = lcm(3, 4);
+	t_int(n, 12, "t4");
+	
+  }
+  {
+	const int len = 9;
+	int arr[len];
+	gene_array_int(arr, len, 1, 9);
+	print_array_int(arr, len, 3);
+
+	subRow(arr, 1, 2, 3);
+	fw("subRow");
+	print_array_int(arr, len, 3);
+
+	fw("subRow 1");
+	for(int i = 1; i < 3; i++){
+	  subRow(arr, (i-1), i, 3);
+	}
+	print_array_int(arr, len, 3);
+	fw("mulRow 1");
+	int r0 = 2;
+	mulRow(10, arr, r0, 3);
+	print_array_int(arr, len, 3);
+  }
+  {
+	const int len = 9;
+	int arr[len];
+	int r0 = 2;
+	gene_array_int(arr, len, 1, 9);
+	print_array_int(arr, len, 3);
+	fw("mulRow 1");
+	mulRow(10, arr, r0, 3);
+	print_array_int(arr, len, 3);
+  }
+
+  {
+	const int len = 9;
+	const int width = 3;
+	int arr[len] = {2, 4, 8,
+					5, 7, 6,
+					8, 3, 5};
+	int r0 = 0;
+	print_array_int(arr, len, width);
+	rowDiv(2, arr, r0, width);
+	fw("rowDiv");
+	print_array_int(arr, len, width);
+  }
+  {
+	{
+	  const int len = 4;
+	  int arr[len] = {2, 4, 8, 2};
+	  int g = gcd_array(arr, len);
+	  t_int(g, 2, "gcd_array 1");
+	}
+	{
+	  const int len = 4;
+	  int arr[len] = {3, 4, 12, 4};
+	  int g = gcd_array(arr, len);
+	  t_int(g, 1, "gcd_array 2");
+	}
+	{
+	  const int len = 4;
+	  int arr[len] = {16, 20, 12, 4};
+	  int g = gcd_array(arr, len);
+	  t_int(g, 4, "gcd_array 3");
+	}
+  }
+  {
+	const int len = 9;
+	const int width = 3;
+	int arr[len] = {2, 4, 8,
+					5, 7, 6,
+					8, 3, 5};
+	int r0 = 0;
+	print_array_int(arr, len, width);
+    int rowArr[3];
+	int rx = 0;
+	get_row(arr, len, rowArr, rx, width);
+	fw("rowArr");
+	print_array_int(rowArr, width, 1);
+  }
+
+  {
+	const int len = 9;
+	const int width = 3;
+	int arr[len] = {2, 4, 8,
+					5, 7, 6,
+					8, 3, 5};
+	
+	print_array_int(arr, len, width);
+    int colArr[3];
+	int cx = 2;
+	get_col(arr, len, colArr, cx, width);
+	fw("colArr");
+	int nRow = len / width;
+	print_array_int(colArr, nRow, 1);
+  }
+  {
+	char* str = "abc";
+	char retBuf[100];
+	pad_left(str, 4, 'x', retBuf);
+	printf("retBuf=%s\n", retBuf);
+	t_str(retBuf, "xxxxabc", "pad_left 1");
+  }
+  {
+	char* s1 = "abc";
+	char* s2 = "kkk";
+	char retBuf[50];
+	concat_str(s1, s2, retBuf);
+	t_str(retBuf, "abckkk", "concat_str 1");
+  }
+  {
+	char* str = "abc";
+	char retBuf[100];
+	pad_right(str, 4, 'x', retBuf);
+	t_str(retBuf, "abcxxxx", "pad_right 1");
+  }
+  {
+	const int len = 4;
+	int arr[len];
+	gene_array_int(arr, len, 1, 9);
+	// print_array_int(arr, len, 1);
+
+	int s = foldl_int(add, 0, arr, len);
+	printf("s=%d\n", s);
+  }
+  {
+	const int len = 4;
+	int arr[len];
+	gene_array_int(arr, len, 1, 9);
+	// print_array_int(arr, len, 1);
+
+	int s = foldl_int(mul, 1, arr, len);
+	printf("s=%d\n", s);
+  }
+  {
+	const int len = 9;
+	const int width = 3;
+	int arr[len] = {2,   4,    8000000,
+					500, 7,    6,
+					8,   3000, 5};
+	print_matrix_int(arr, len, width);
+  }
+  {
+	const int len = 16;
+	const int width = 4;
+	int nRow = len / width;
+	int arr[len] = {2, 4, 1, 3,
+					5, 7, 6, 2,
+					8, 3, 5, 19,
+					4, 5, 7, 8
+	               };
+	// gene_array_int(arr, len, 1, 9);
+
+	for(int i = 0; i < nRow; i++){
+	  for(int j = 0; j < width; j++){
+		int r0 = i;
+		int r1 = r0 + 1 + j;
+		
+		if(r1< width){
+		  int i0 = inx(arr, r0, i, width);
+		  int i1 = inx(arr, r1, i, width);		
+		  int c = lcm(abs(i0), abs(i1));
+		  printf("lcm=%d\n", c);
+		  fw("print_array_int");
+		  print_matrix_int(arr, len, width);
+		  
+		  printf("i0=%d\n", i0);
+		  printf("i1=%d\n", i1);
+		  
+		  
+		  int fac1 = c/i0;
+		  mulRow(fac1, arr, r0, width);
+		  fw("mulRow 1");
+		  print_matrix_int(arr, len, width);
+
+		  int fac2 = c/i1;
+		  mulRow(fac2, arr, r1, width);
+		  fw("mulRow 2");
+		  print_matrix_int(arr, len, width);
+		  
+		  subRow(arr, r0, r1, width);
+		  fw("subRow 1");
+		  print_matrix_int(arr, len, width);
+		}
+	  }
+	}
+	for(int i = 0; i < nRow; i++){
+	  int rowBuf[width];
+	  get_row(arr, len, rowBuf, i, width);
+	  fw("rowBuf");
+	  print_array_int(rowBuf, width, 1);
+	  int g = gcd_array_positive(rowBuf, width);
+	  printf("g=%d\n", g);
+	  rowDiv(g, arr, i, width);
+	}
+	print_matrix_int(arr, len, width);
+  }
+  
+  {
+	const int len = 2;
+	int arr[len] = {0, 1};
+	remove_zero(arr, len);
+	print_array_int(arr, len, 1);
+  }
+  
+  
+  return(0);
+}
