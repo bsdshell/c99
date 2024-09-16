@@ -4,7 +4,7 @@
 #include <time.h>
 #include <stdbool.h>
 #include "/Users/aaa/myfile/github/c99lib/AronCLibNew.h"
-#include "/Users/aaa/myfile/github/c99libtest/my_vector.h"
+#include "/Users/aaa/myfile/github/c99lib/my_vector.h"
 
 enum {IP_LEN = 20};
 // BEG_flow
@@ -2029,64 +2029,7 @@ void test0() {
         }
         putchar ('\n');
     }
-    {
-        fw("quick_sort 1");
-        int num = 1;
-        int* arr = (int*)malloc(sizeof(int) * num);
-        arr[0] = 2;
-        int lo = 0;
-        int hi = num - 1;
-        quick_sort(arr, lo, hi);
-        for(int i = 0; i < num; i++) {
-            pl("quick_sort=%d", arr[i]);
-        }
-        free(arr);
-    }
 
-    {
-        fw("quick_sort 2");
-        int num = 2;
-        int* arr = (int*)malloc(sizeof(int) * num);
-        arr[0] = 2;
-        arr[1] = 1;
-        int lo = 0;
-        int hi = num - 1;
-        quick_sort(arr, lo, hi);
-        for(int i = 0; i < num; i++) {
-            pl("quick_sort=%d", arr[i]);
-        }
-        free(arr);
-    }
-    {
-        /**
-             x
-             2  1  2
-        	 .
-
-        	    x
-             2  1  2
-        	    .
-
-        		   x
-             2  1  2
-        	       .
-
-         */
-        fw("quick_sort 2");
-        int num = 3;
-        int* arr = (int*)malloc(sizeof(int) * num);
-        arr[0] = 2;
-        arr[1] = 1;
-        arr[2] = 2;
-        int lo = 0;
-        int hi = num - 1;
-        quick_sort(arr, lo, hi);
-        for(int i = 0; i < num; i++) {
-            pl("quick_sort=%d", arr[i]);
-        }
-
-        free(arr);
-    }
     {
         {
             fw("mc 1 int");
@@ -2602,8 +2545,6 @@ int main () {
             printf("%c ", pt[i]);
         }
         free(pt);
-
-
     }
     return(0);
 }

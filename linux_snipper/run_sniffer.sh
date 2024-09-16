@@ -50,10 +50,12 @@ ghcProfile="/usr/local/bin/ghc -i$HOME/myfile/bitbucket/haskelllib -prof -fprof-
 
 includeBoostFileSystem="/usr/local/Cellar/boost/1.72.0_2/include"
 # boostSystem="/usr/local/Cellar/boost/1.72.0_2"
+# cmake -H. -Bbuild
+# cmake --build build -- -j3
+
+
 g++ -v
-
 fl
-
 outName="$ff/runbin/try"
 # run="g++ -I$cpplib  -I$includeBoostFileSystem -std=c++14 -O3 -Wall -pedantic line.cpp -lboost_filesystem -lboost_system -o $outdir"
 # run="g++ -I$cpplib  -I$boostinclude -std=c++14 -O3 -Wall -pedantic line.cpp -lboost_filesystem -lboost_system -o $outdir"
@@ -61,17 +63,8 @@ outName="$ff/runbin/try"
 # run="g++ -I$clib -std=c++14 -O3 -Wall -pedantic takeName.cpp -o takeName"
 
 # -lm link math library
-run="gcc -I$clib  -Wall try1.c -o try1 -lm && ./try1"
+run="gcc -I$clib  -Wall sniffer.c -o sniffer -lm && ./sniffer"
 
-mydate=$(date)
 printc 200 "$run"
 eval "$run"
 
-if [[ "$?" -eq 0 ]]; then
-  notify.sh "OK: $mydate"
-else
-  notify.sh "ERROR: $mydate"
-fi
-
-# cmake -H. -Bbuild
-# cmake --build build -- -j3

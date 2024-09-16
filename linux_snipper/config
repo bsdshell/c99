@@ -1,0 +1,11 @@
+Host itemsdeal
+ HostName itemsdeal.com
+ User cat
+ IdentityFile "~/.ssh/id_rsa"
+ IdentitiesOnly yes
+
+Host xfido 
+ HostName xfido.com
+ User cat
+ IdentityFile "~/.ssh/id_rsa"
+ IdentitiesOnly yes

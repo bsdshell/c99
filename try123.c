@@ -40,9 +40,11 @@ int main () {
      double c = 2;
      double x0;
      double x1;
+	 
      int ret = gsl_poly_solve_quadratic(a, b, c, &x0, &x1);
      printf("x0=%f x1=%f\n", x0, x1);
      printf("ret=%d\n", ret);
+	 
    }
 
 

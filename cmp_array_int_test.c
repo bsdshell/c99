@@ -12,16 +12,6 @@
     COMPILE: run.sh
 */
 
-typedef struct pairX{
-  void* x;
-  void* y;
-} pairX;
-
-typedef struct ArrayX{
-  void* pt;
-  int len;
-} ArrayX;
-
 
 typedef struct Num{
   bool isNeg;   // 0 => positive, 1 => negative
@@ -179,53 +169,6 @@ int noneZero(int* arr, int len){
   return ret;
 }
 
-void abs_array_int(int* arr, int len){
-  arr[0] = arr[0] == 1 ? 0 : arr[0];
-}
-
-bool positive_arry_int(int* arr, int len){
-  return arr[0] == 0 && arr[1] != 0 ? true : false;
-}
-
-bool zero_array_int(int* arr, int len){
-  return arr[0] == 0 && arr[1] == 0 ? true : false;
-}
-
-bool negative_arry_int(int* arr, int len){
-  return arr[0] == 1 && arr[1] != 0 ? true : false;
-}
-
-void add_array_int_positive(int* arr0, int* arr1, int len, int* retArr, int len1){
-  int s = 0;
-  int c = 0;
-  for(int i = 0; i < len; i++){
-	int rx = len - 1 - i;
-	s = arr0[rx] + arr1[rx] + c;
-	retArr[rx + 1] = s % 10;
-	c = s / 10;
-  }
-  retArr[0] = c;
-}
-
-void add_array_int_X(int* arr0, int* arr1, int len, int* retArr, int len1){
-  // a > 0, b > 0
-  if(positive_arry_int(arr0, len) && positive_arry_int(arr1, len)){
-	add_array_int_positive(arr0, arr1, len, retArr, len1);
-  }else if(negative_arry_int(arr0, len) && negative_arry_int(arr1, len)){
-	abs_array_int(arr0, len);
-	abs_array_int(arr1, len);
-	add_array_int_positive(arr0, arr1, len, retArr, len1);
-  }else if(positive_arry_int(arr0, len) && negative_arry_int(arr1, len)){
-	abs_array_int(arr1, len);
-	add_array_int_positive(arr0, arr1, len, retArr, len1);
-  }else if(negative_arry_int(arr0, len) && positive_arry_int(arr1, len)){
-	abs_array_int(arr0, len);
-	add_array_int_positive(arr0, arr1, len, retArr, len1);
-  }else if(zero_array_int(arr0, len)){
-	
-  }
-}
-
 int cmp_array_int(int* arr0, int* arr1, int len){
   int ret = 0;
   for(int i = 0; i < len; i++){
@@ -271,9 +214,11 @@ int cmp_array_int(int* arr0, int* arr1, int len){
   return ret;
 }
 
+
 void sub_array_int(int* arr0, int* arr1, int len, int* retArr){
 
 }
+
 
 int main () {
   printf("try1.c\n");
@@ -728,7 +673,31 @@ int main () {
 	int s = foldl_int(max_c, 0, arr, len);
 	printf("max_c=%d\n", s);
   }
+  {
+	/*
+	     9 9
+		 8 2
+	   --------
+	   0 1 7
+	*/
+	const int len = 2;
+	int arr0[] = {9, 9};
+	int arr1[] = {8, 2};
+	int retArr[3];
+	int expArr[3] = {0, 1, 7};
 
+	fw("sub_array_int 1");
+  }
+  {
+	/*
+	*/
+	const int len = 2;
+	int arr0[] = {9, 9};
+	int arr1[] = {8, 2};
+	int retArr[3];
+	int expArr[3] = {0, 1, 7};
+	fw("sub_array_int 1");
+  }
   {
 	const int len = 3;
 	Num num;
@@ -888,46 +857,6 @@ int main () {
 	fw("cmp_array_int 11");
 	t_int(b, -1, "t_int 11");
   }
-  {
-	pairX* pt = (pairX*)malloc(sizeof(pairX));
-    int a = 1;
-	int b = 4;
-	pt -> x = (int*)&a;
-	pt -> y = (int*)&b;
 
-	printf("x=%d\n", *(int*)(pt -> x));
-	printf("y=%d\n", *(int*)(pt -> y));
-	free(pt);
-  }
-  {
-	pairX* pt = (pairX*)malloc(sizeof(pairX));
-	float fa = 3.1415;
-	double fb = 0.0001;
-	pt -> x = (float*)&fa;
-	pt -> y = (double*)&fb;
-	printf("pt -> x = %f\n", *(float*)(pt -> x));
-	printf("pt -> y = %f\n", *(double*)(pt -> y));
-  }
-  {
-	const int len = 4;
-	pairX* pt = (pairX*)malloc(sizeof(pairX));
-	int arr[len] = {1, 2, 3, 4};
-	int b = len;
-	pt -> x = (int*)arr;
-	pt -> y = (int*)&b;
-	print_array_int(pt -> x, len, len);
-	printf("y=%d\n", *(int*)(pt -> y));
-	free(pt);
-  }
-  {
-	const int len = 2;
-	const int len1 = 3;
-	int arr0[len] = {9, 9};
-	int arr1[len] = {7, 8};
-	int retArr[len1];
-	add_array_int_positive(arr0, arr1, len, retArr, len1);
-	print_array_int(retArr, len1, len1);
-  }
-  
   return(0);
 }
